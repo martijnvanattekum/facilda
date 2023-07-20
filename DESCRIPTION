@@ -1,0 +1,19 @@
+Package: helpers
+Type: Package
+Title: Helper functions
+Version: 0.1.0
+Author: Martijn van Attekum
+Maintainer: Martijn van Attekum <martijnvanattekum@gmail.com>
+Description: Set of i/o and computational biology helper functions.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 2.10),
+    methods (>= 3.0),
+    fs (>= 1.0),
+    ggplot2 (>= 3.0),
+    purrr (>= 1.0),
+    readr (>= 2.0),
+    stringr (>= 1.0)
+RoxygenNote: 7.2.3
