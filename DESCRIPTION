@@ -15,5 +15,7 @@ Depends:
     ggplot2 (>= 3.0),
     purrr (>= 1.0),
     readr (>= 2.0),
-    stringr (>= 1.0)
+    stringr (>= 1.0), 
+    AnnotationDbi (>= 1.0),
+    org.Hs.eg.db (>= 1.0)
 RoxygenNote: 7.2.3
