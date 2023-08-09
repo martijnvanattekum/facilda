@@ -1,10 +1,10 @@
-Package: helpers
+Package: facilda
 Type: Package
 Title: Helper functions
-Version: 0.1.0
+Version: 0.1.1
 Author: Martijn van Attekum
 Maintainer: Martijn van Attekum <martijnvanattekum@gmail.com>
-Description: Set of i/o and computational biology helper functions.
+Description: Data analysis helper functions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
