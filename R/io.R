@@ -12,7 +12,8 @@
 #' system(paste0("touch ", directory, "/newfile"))
 #' create_empty_dir(directory, 1)
 #' # -> newfile is deleted
-#' @import fs stringr
+#' @importFrom fs file_delete
+#' @importFrom stringr str_extract_all
 #' @export
 create_empty_dir <- function(path, mindepth = 5) {
 
@@ -53,7 +54,10 @@ create_empty_dir <- function(path, mindepth = 5) {
 #' str(my_output_list, max.level = 3)
 #' # Structure in the returned temporary folder, e.g.
 #' system(paste0("tree ", dir_out))
-#' @import ggplot2 fs purrr methods readr
+#' @importFrom ggplot2 ggsave
+#' @importFrom purrr walk2
+#' @importFrom readr write_csv
+#' @importFrom methods is
 #' @export
 write_nested_output <- function(output_list, dir_out, mindepth = 5) {
 
@@ -86,4 +90,20 @@ write_nested_output <- function(output_list, dir_out, mindepth = 5) {
   }
   )
   return(dir_out)
+}
+
+#' Combine multiple pdfs into 1 file
+#'
+#' Finds all pdf files in path and combines them into one file with the name
+# of the folder.
+#'
+#' @param path The path where the pdfs will be searched and output will be generated
+#' @importFrom qpdf pdf_combine
+#' @export
+pdf_combine_from_path <- function(path) {
+
+  filename <- paste0(basename(path), ".pdf")
+  pdf_filenames <- fs::dir_ls(path, glob="*.pdf")
+  if (length(pdf_filenames) > 1){qpdf::pdf_combine(pdf_filenames, fs::path(path, filename))}
+
 }

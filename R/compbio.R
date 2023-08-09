@@ -14,11 +14,13 @@
 #' ensembl_ids <- c("ENSG00000132475.8", "ENSG00000185339.8")
 #' symbols <- automap_ids(ensembl_ids)
 
-#' @import org.Hs.eg.db purrr AnnotationDbi
+#' @import org.Hs.eg.db
+#' @importFrom purrr map set_names
+#' @importFrom AnnotationDbi keys mapIds keytypes
 #' @export
 automap_ids <- function(ids, return_keytype = "SYMBOL") {
 
-  db_ids_by_type <- purrr::map(keytypes(org.Hs.eg.db) %>% purrr::set_names(), ~AnnotationDbi::keys(org.Hs.eg.db, .x))
+  db_ids_by_type <- purrr::map(AnnotationDbi::keytypes(org.Hs.eg.db) %>% purrr::set_names(), ~AnnotationDbi::keys(org.Hs.eg.db, .x))
 
   original_ids <- ids
   ids_for_conversion <- ids %>%

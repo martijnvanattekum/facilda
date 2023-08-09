@@ -18,7 +18,9 @@ ids
 }
 \description{
 Uses the org.Hs.eg.db database to detect the keytype of the input vector
-and converts it to the keytype defined by return_keytype
+and converts it to the keytype defined by return_keytype.
+When multiple target ids are found for a source id, the first will be
+returned.
 }
 \examples{
 ensembl_ids <- c("ENSG00000132475.8", "ENSG00000185339.8")

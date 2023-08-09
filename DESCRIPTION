@@ -1,6 +1,6 @@
 Package: facilda
 Type: Package
-Title: Helper functions
+Title: Helper functions that FACILitate Data Analysis
 Version: 0.1.1
 Author: Martijn van Attekum
 Maintainer: Martijn van Attekum <martijnvanattekum@gmail.com>
@@ -9,13 +9,18 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: 
-    R (>= 2.10),
+    R (>= 2.10)
+Imports:
+    rlang (>= 1.0),
     methods (>= 3.0),
     fs (>= 1.0),
     ggplot2 (>= 3.0),
+    cowplot (>= 1.0),
     purrr (>= 1.0),
     readr (>= 2.0),
-    stringr (>= 1.0), 
+    stringr (>= 1.0),
+    qpdf (>= 1.0),
     AnnotationDbi (>= 1.0),
-    org.Hs.eg.db (>= 1.0)
+    org.Hs.eg.db (>= 1.0),
+    magrittr (>= 2.0)
 RoxygenNote: 7.2.3
