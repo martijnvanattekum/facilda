@@ -18,22 +18,29 @@
 #' @importFrom purrr map set_names
 #' @importFrom AnnotationDbi keys mapIds keytypes
 #' @export
-automap_ids <- function(ids, return_keytype = "SYMBOL") {
+automap_ids <- function (ids, return_keytype = "SYMBOL", species = "human") {
 
-  db_ids_by_type <- purrr::map(AnnotationDbi::keytypes(org.Hs.eg.db) %>% purrr::set_names(), ~AnnotationDbi::keys(org.Hs.eg.db, .x))
+  stopifnot(species %in% c("human", "mouse"))
 
+  db <- switch(species,
+               human = org.Hs.eg.db::org.Hs.eg.db,
+               mouse = org.Mm.eg.db::org.Mm.eg.db)
+
+  db_ids_by_type <- purrr::map(AnnotationDbi::keytypes(db) %>%
+                                 purrr::set_names(), ~AnnotationDbi::keys(db, .x))
   original_ids <- ids
-  ids_for_conversion <- ids %>%
-    as.character() %>%
-    # potential trailing .n version number from ensembl and refseq ids must be removed before conversion
-    stringr::str_replace("((^ENS[GPT])[^\\.]*)\\.[0-9]+", "\\1") %>%
-    stringr::str_replace("((^[NXY][MPR]_)[^\\.]*)\\.[0-9]+", "\\1")
-
-  perc_ids_found_per_keytype <- purrr::map_dbl(db_ids_by_type, ~mean(ids_for_conversion %in% .x))
-  if (all(perc_ids_found_per_keytype < .2)) stop(paste0("Type of ids not recognized. Valid types are: ", paste(names(db_ids_by_type), collapse = ", ")))
+  ids_for_conversion <- ids %>% as.character() %>% stringr::str_replace("((^ENS[GPTM])[^\\.]*)\\.[0-9]+",
+                                                                        "\\1") %>% stringr::str_replace("((^[NXY][MPR]_)[^\\.]*)\\.[0-9]+",
+                                                                                                        "\\1")
+  perc_ids_found_per_keytype <- purrr::map_dbl(db_ids_by_type,
+                                               ~mean(ids_for_conversion %in% .x))
+  if (all(perc_ids_found_per_keytype < 0.2))
+    stop(paste0("Type of ids not recognized. Ensure that the ids are valid and ",
+                "you selected the correct species. Valid types are: ",
+                paste(names(db_ids_by_type), collapse = ", ")))
   detected_keytype <- names(perc_ids_found_per_keytype)[which.max(perc_ids_found_per_keytype)]
+  AnnotationDbi::mapIds(db, keys = ids_for_conversion,
+                        column = return_keytype, keytype = detected_keytype,
+                        multiVals = "first") %>% set_names(original_ids)
+}
 
-  AnnotationDbi::mapIds(org.Hs.eg.db, keys = ids_for_conversion, column = return_keytype, keytype = detected_keytype, multiVals = "first") %>%
-    set_names(original_ids)
-
-  }
