@@ -1,7 +1,7 @@
 Package: facilda
 Type: Package
 Title: Helper functions that FACILitate Data Analysis
-Version: 0.1.1
+Version: 0.1.2
 Author: Martijn van Attekum
 Maintainer: Martijn van Attekum <martijnvanattekum@gmail.com>
 Description: Data analysis helper functions.
@@ -15,7 +15,10 @@ Imports:
     methods (>= 3.0),
     fs (>= 1.0),
     ggplot2 (>= 3.0),
+    ggrepel,
     cowplot (>= 1.0),
+    dplyr,
+    tibble,
     purrr (>= 1.0),
     readr (>= 2.0),
     stringr (>= 1.0),
@@ -23,5 +26,9 @@ Imports:
     AnnotationDbi (>= 1.0),
     org.Hs.eg.db (>= 1.0),
     org.Mm.eg.db (>= 1.0),
-    magrittr (>= 2.0)
+    DESeq2,
+    magrittr (>= 2.0),
+    cleanse
+Remotes:
+    martijnvanattekum/cleanse
 RoxygenNote: 7.2.3

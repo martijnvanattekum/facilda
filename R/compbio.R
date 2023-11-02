@@ -1,3 +1,5 @@
+utils::globalVariables(c(".", "dot_color", "dot_label", "has_changed", "is_deg",
+                         "is_relevant", "log2FoldChange", "padj", "symbol"))
 #' Detects annotation identifiers and converts them to the requested format
 #'
 #' Uses the org.Hs.eg.db database to detect the keytype of the input vector
@@ -46,3 +48,140 @@ automap_ids <- function (ids, return_keytype = "SYMBOL", species = "human") {
                         multiVals = "first") %>% set_names(original_ids)
 }
 
+#' Annotates deseq result with metadata from a SummarizedExperiment
+#'
+#' The joining will be done on the ensg column
+#'
+#' @param deseq_results A DESeq results table returned from DESeq2::results()
+#' @param se The SummarizedExperiment from which to extract the additional data.
+#' Must contain a column named ensg in its rowdata
+#' @param row_data_cols_to_add a character vector containing the colnames from
+#' the se's rowdata
+#' @return a tibble with the information added and incomplete cases removed
+#'
+#' @importFrom cleanse get_row_data
+#' @importFrom tibble rownames_to_column tibble
+#' @importFrom dplyr filter arrange left_join
+annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
+
+  stopifnot(all(row_data_cols_to_add %in% colnames(cleanse::get_row_data(se))))
+
+  # Extract this info to add it back after the contrasts are calculated
+  additional_rowdata <- cleanse::get_row_data(se) %>%
+    dplyr::select(!!c("ensg", row_data_cols_to_add))
+
+  deseq_results %>%
+    data.frame() %>%
+    tibble::rownames_to_column("ensg") %>%
+    tibble::tibble %>%
+    dplyr::filter(!is.na(padj)) %>%
+    dplyr::arrange(padj) %>%
+    dplyr::left_join(additional_rowdata, by = "ensg") %>%
+    dplyr::filter(!is.na(symbol))
+
+}
+
+#' Creates a contrasts table
+#'
+#' The joining will be done on the ensg column
+#'
+#' @param se A SummarizedExperiment containing the expression data and the
+#' metadata required in the defined contrast
+#' @param contrast The variables to contrast. See ?DESeq2::results
+#' @param design_char a character that will be converted to the design formula.
+#' See ?DESeq2::DESeqDataSet
+#' @return A tibble with the requested contrast table
+#'
+#' @importFrom cleanse get_row_data options_from_coldata filter
+#' @importFrom stringr str_split str_remove_all str_subset str_detect
+#' @importFrom DESeq2 DESeqDataSet DESeq results
+#' @importFrom purrr reduce
+#' @importFrom stats as.formula
+#' @export
+calculate_contrasts_table <- function(se, contrast, design_char) {
+
+  # Check design_char argument
+  design_parameters <- stringr::str_split(design_char, "\\+")[[1]] %>%
+    stringr::str_remove_all("[ ~]") %>%
+    stringr::str_subset(":", negate = TRUE)  # removes interaction terms
+
+  stopifnot(all(design_parameters %in% colnames(cleanse::get_col_data(se))))
+
+  # Check contrast argument
+  if (!is(contrast, "list")) {
+    contrast_var <- contrast[1]
+    target_contrast_var_values <- contrast[c(2, 3)]
+    actual_contrast_var_values <- cleanse::options_from_coldata(se, contrast_var)
+    if(!all(target_contrast_var_values %in% actual_contrast_var_values)){
+      warning(paste("The supplied se does not contain all values requested to",
+                    "create contrasts for in the resultname argument. Contrasts",
+                    "cannot be calculated. Requested values: ",
+                    paste(target_contrast_var_values, collapse = ", "), "Actual values: ",
+                    paste(actual_contrast_var_values, collapse = ", "), "Returning NA."))
+      return(NA)}
+
+    stopifnot(stringr::str_detect(design_char, contrast_var))
+  }
+
+  # filters only the columns of se that are not NA and finite
+  filter_valid_values <- function(se, colname) {
+
+    cleanse::filter(se, col, !is.na(!!rlang::sym(colname)) & is.finite(!!rlang::sym(colname)))
+
+  }
+
+  se %>%
+    # DESeq cannot handle NA values in design variables - remove those observations
+    {purrr::reduce(design_parameters[1:3], \(this_se, param) filter_valid_values(this_se, param), .init = .)} %>%
+    DESeq2::DESeqDataSet(design = stats::as.formula(design_char)) %>%
+    DESeq2::DESeq() %>%
+    DESeq2::results(contrast=contrast) %>%
+    annotate_results_table(se, row_data_cols_to_add = c("symbol", "biotype"))
+
+}
+
+#' Creates a volcano plot from a contrasts table
+#'
+#' Genes for which the absolute fold change is larger than indidated and have
+#' have an adjusted p value below the significance_cutoff will be highlighted
+#' and labeled (when requested).
+#'
+#' @param contrast_tb A tibble produced by facilda::calculate_contrasts_table
+#' @param ttl The title of the plot
+#' @param relevant_fc the absolute fold change above which genes are considered
+#' relevant
+#' @param significance_cutoff the adjusted p-value below which genes are
+#' considered significant
+#' @param add_labels whether to label the relevant points
+#' @return A ggplot2 object of the volcano plot
+#'
+#' @importFrom dplyr filter mutate pull
+#' @importFrom ggplot2 ggplot aes geom_point scale_x_continuous scale_color_identity
+#' @importFrom ggplot2 theme_bw ggtitle geom_hline geom_vline theme element_text
+#' @importFrom ggrepel geom_text_repel
+#' @export
+volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE) {
+
+  plot_data <- contrast_tb %>%
+    dplyr::filter(!is.na(padj) & !is.na(log2FoldChange)) %>%
+    dplyr::mutate(is_deg = padj < significance_cutoff,
+                  has_changed = abs(log2FoldChange) > log2(relevant_fc),
+                  is_relevant = is_deg & has_changed) %>%
+    mutate(dot_color = ifelse(is_relevant, "orange", "grey")) %>%
+    mutate(dot_label = ifelse(is_relevant, symbol, ""))
+
+  x_span <- max(abs(dplyr::pull(plot_data, log2FoldChange)), na.rm=TRUE) * 1.05
+
+  ggplot2::ggplot(plot_data,
+                  ggplot2::aes(x=log2FoldChange, y=-log10(padj), color=dot_color, label=dot_label)) +
+    ggplot2::geom_point(size=1) +
+    ggplot2::scale_x_continuous(limits = c(-x_span, x_span)) +
+    ggplot2::scale_color_identity() +
+    ggplot2::theme_bw() +
+    {if (!is.null(ttl)) ggplot2::ggtitle(ttl)} +
+    {if (add_labels) ggrepel::geom_text_repel(seed = 42, color="grey30", max.overlaps=100, segment.ncp = 3, force = 20)} +
+    ggplot2::geom_hline(yintercept=-log10(significance_cutoff), linetype="dotted", color = "grey30") +
+    ggplot2::geom_vline(xintercept=c(-log2(relevant_fc),log2(relevant_fc)), linetype="dotted", color = "grey30") +
+    ggplot2::theme(strip.text = ggplot2::element_text(size = 20))
+
+}
