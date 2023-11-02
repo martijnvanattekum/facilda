@@ -73,7 +73,7 @@ annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
   deseq_results %>%
     data.frame() %>%
     tibble::rownames_to_column("ensg") %>%
-    tibble::as_tibble %>%
+    tibble::as_tibble() %>%
     dplyr::filter(!is.na(padj)) %>%
     dplyr::arrange(padj) %>%
     dplyr::left_join(additional_rowdata, by = "ensg") %>%
