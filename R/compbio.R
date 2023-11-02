@@ -73,7 +73,7 @@ annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
   deseq_results %>%
     data.frame() %>%
     tibble::rownames_to_column("ensg") %>%
-    tibble::tibble %>%
+    tibble::as_tibble %>%
     dplyr::filter(!is.na(padj)) %>%
     dplyr::arrange(padj) %>%
     dplyr::left_join(additional_rowdata, by = "ensg") %>%
@@ -126,13 +126,22 @@ calculate_contrasts_table <- function(se, contrast, design_char) {
   # filters only the columns of se that are not NA and finite
   filter_valid_values <- function(se, colname) {
 
-    cleanse::filter(se, col, !is.na(!!rlang::sym(colname)) & is.finite(!!rlang::sym(colname)))
+    se_filtered <- cleanse::filter(se, col, !is.na(!!rlang::sym(colname)))
+    if (is.numeric(se$colname)){
+      se_filtered <- cleanse::filter(se_filtered, col, is.finite(!!rlang::sym(colname)))
+    }
+    if (ncol(se) != ncol(se_filtered)) {
+      warning(paste("se contains samples with NA or infinite values for design parameter ",
+                    colname, ". Removing these samples as they cannot be used to ",
+                    "calculate contrasts."
+      ))}
+    se_filtered
 
   }
 
   se %>%
     # DESeq cannot handle NA values in design variables - remove those observations
-    {purrr::reduce(design_parameters[1:3], \(this_se, param) filter_valid_values(this_se, param), .init = .)} %>%
+    {purrr::reduce(design_parameters, \(this_se, param) filter_valid_values(this_se, param), .init = .)} %>%
     DESeq2::DESeqDataSet(design = stats::as.formula(design_char)) %>%
     DESeq2::DESeq() %>%
     DESeq2::results(contrast=contrast) %>%
