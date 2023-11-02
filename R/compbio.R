@@ -8,13 +8,15 @@
 #' @param ids vector containing the original ids, all of the same keytype
 #' @param return_keytype format which to convert ids to. Options can be found
 #' by running library(org.Hs.eg.db); keytypes(org.Hs.eg.db)
+#' @param species either "human" or "mouse" to indicate from which species the
+#' identifiers are
 #' @return named vector containing the converted ids, named with the original
 #' ids
 #' @examples
 #' ensembl_ids <- c("ENSG00000132475.8", "ENSG00000185339.8")
 #' symbols <- automap_ids(ensembl_ids)
 
-#' @import org.Hs.eg.db
+#' @import org.Hs.eg.db org.Mm.eg.db
 #' @importFrom purrr map set_names
 #' @importFrom AnnotationDbi keys mapIds keytypes
 #' @export

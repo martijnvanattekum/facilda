@@ -4,13 +4,16 @@
 \alias{automap_ids}
 \title{Detects annotation identifiers and converts them to the requested format}
 \usage{
-automap_ids(ids, return_keytype = "SYMBOL")
+automap_ids(ids, return_keytype = "SYMBOL", species = "human")
 }
 \arguments{
 \item{ids}{vector containing the original ids, all of the same keytype}
 
 \item{return_keytype}{format which to convert ids to. Options can be found
 by running library(org.Hs.eg.db); keytypes(org.Hs.eg.db)}
+
+\item{species}{either "human" or "mouse" to indicate from which species the
+identifiers are}
 }
 \value{
 named vector containing the converted ids, named with the original

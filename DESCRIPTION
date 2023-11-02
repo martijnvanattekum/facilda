@@ -22,5 +22,6 @@ Imports:
     qpdf (>= 1.0),
     AnnotationDbi (>= 1.0),
     org.Hs.eg.db (>= 1.0),
+    org.Mm.eg.db (>= 1.0),
     magrittr (>= 2.0)
 RoxygenNote: 7.2.3

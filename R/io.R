@@ -56,7 +56,7 @@ create_empty_dir <- function(path, mindepth = 5) {
 #' system(paste0("tree ", dir_out))
 #' @importFrom ggplot2 ggsave
 #' @importFrom purrr walk2
-#' @importFrom readr write_csv
+#' @importFrom readr write_csv write_rds
 #' @importFrom methods is
 #' @export
 write_nested_output <- function(output_list, dir_out, mindepth = 5) {
@@ -69,11 +69,15 @@ write_nested_output <- function(output_list, dir_out, mindepth = 5) {
       ggplot2::ggsave(filename = fs::path(dir_out, paste0(name, ".pdf")),
                       plot = object,
                       width = size_A4_mm[1], height = size_A4_mm[2], units = "mm")
+      readr::write_rds(x = object,
+                       file = fs::path(dir_out, paste0(name, ".RDS")))
 
     } else if (methods::is(object, "data.frame")) {
 
       readr::write_csv(x = object,
                        file = fs::path(dir_out, paste0(name, ".csv")))
+      readr::write_rds(x = object,
+                       file = fs::path(dir_out, paste0(name, ".RDS")))
 
       # recursion case
     } else if (methods::is(object, "list")) {
