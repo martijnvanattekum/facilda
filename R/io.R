@@ -96,6 +96,43 @@ write_nested_output <- function(output_list, dir_out, mindepth = 5) {
   return(dir_out)
 }
 
+#' Reads RDS object from nested directories and creates a nested list from them
+#'
+#' Acts as a complement to write_nested_output(). The RDS files written to disk
+#' by write_nested_output() will be read in to recreate the list originally
+#' used by write_nested_output() to write the data to disk.
+#'
+#' @param dir_in The directory where the input RDS files are located (character or fs::path)
+#' @return The nested list containing the content of the RDS files
+#' @examples
+#' # write output by running the example from write_any_output(), then run ...
+#' \dontrun{nested_input <- read_nested_input(dir_out)}
+#' @importFrom fs path_expand dir_ls
+#' @importFrom purrr map map_int walk2 pluck
+#' @importFrom readr write_csv write_rds
+#' @importFrom stringr str_remove str_split_1
+#' @export
+read_nested_input <- function(dir_in) {
+
+  dir_in <- fs::path_expand(dir_in)
+
+  filenames <- fs::dir_ls(dir_in, recurse=TRUE, glob = "*.RDS")
+
+  values_flat <- filenames %>%
+    purrr::map(~read_rds(.))
+
+  list_levels <- filenames %>%
+    stringr::str_remove(paste0(dir_in, "/")) %>%
+    stringr::str_remove(".RDS") %>%
+    purrr::map(~stringr::str_split_1(., "/")) %>%
+    .[order(purrr::map_int(., \(vec) length(vec)))]
+
+  values_nested <- list()
+  purrr::walk2(values_flat, list_levels, \(value, level_vec) purrr::pluck(values_nested, !!!level_vec) <<- value)
+  values_nested
+
+}
+
 #' Combine multiple pdfs into 1 file
 #'
 #' Finds all pdf files in path and combines them into one file with the name
@@ -111,3 +148,5 @@ pdf_combine_from_path <- function(path) {
   if (length(pdf_filenames) > 1){qpdf::pdf_combine(pdf_filenames, fs::path(path, filename))}
 
 }
+
+

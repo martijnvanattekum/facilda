@@ -1,7 +1,7 @@
 Package: facilda
 Type: Package
 Title: Helper functions that FACILitate Data Analysis
-Version: 0.1.2
+Version: 0.1.3
 Author: Martijn van Attekum
 Maintainer: Martijn van Attekum <martijnvanattekum@gmail.com>
 Description: Data analysis helper functions.
