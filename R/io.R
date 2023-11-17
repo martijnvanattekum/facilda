@@ -124,8 +124,7 @@ read_nested_input <- function(dir_in) {
   list_levels <- filenames %>%
     stringr::str_remove(paste0(dir_in, "/")) %>%
     stringr::str_remove(".RDS") %>%
-    purrr::map(~stringr::str_split_1(., "/")) %>%
-    .[order(purrr::map_int(., \(vec) length(vec)))]
+    purrr::map(~stringr::str_split_1(., "/"))
 
   values_nested <- list()
   purrr::walk2(values_flat, list_levels, \(value, level_vec) purrr::pluck(values_nested, !!!level_vec) <<- value)
