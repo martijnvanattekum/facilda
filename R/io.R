@@ -132,7 +132,7 @@ read_nested_input <- function(dir_in) {
 
 }
 
-#' Combine multiple pdfs into 1 file
+#' Combine multiple pdf files into 1 pdf file
 #'
 #' Finds all pdf files in path and combines them into one file with the name
 # of the folder.
@@ -149,28 +149,28 @@ pdf_combine_from_path <- function(path) {
 }
 
 
-#' Find and combine multiple csv files into 1 xlsx file
+#' Combine multiple csv files into 1 xlsx file
 #'
-#' Searches path recursively for csv files. If csv files are
-#' found in a subdir, an aggregated xlsx file of them is generated, with the
-#' csv filenames as tabnames of the xlsx file.
+#' Searches path for csv files. If csv files are found , an aggregated xlsx file
+#' of them is generated, with the csv filenames as tabnames of the xlsx file.
 #'
 #' @param path The path where the csv's will be searched and output will be generated
+#' @param recurse If TRUE, search for and combine csv files recursively from path
 #' @examples
 #' example_output_directory <- paste0(tempdir(), "/csv_files")
 #' fs::dir_create(example_output_directory)
 #' readr::write_csv(cars, fs::path(example_output_directory, "cars1.csv"))
 #' readr::write_csv(cars, fs::path(example_output_directory, "cars2.csv"))
-#' aggregate_csv(example_output_directory)
+#' csv_combine_from_path(example_output_directory)
 #' system(paste0("ls ", example_output_directory))
 #' @importFrom fs dir_ls path_dir path_ext_remove path_file path
 #' @importFrom purrr set_names map walk
 #' @importFrom readr read_csv
 #' @importFrom writexl write_xlsx
 #' @export
-aggregate_csv <- function(path) {
+csv_combine_from_path <- function(path, recurse = TRUE) {
 
-  files <- fs::dir_ls(path, recurse = TRUE, glob = "*.csv") %>%
+  files <- fs::dir_ls(path, recurse = recurse, glob = "*.csv") %>%
     purrr::set_names(fs::path_dir(.))
   unique_folders <- names(files) %>% unique() %>% purrr::set_names()
   content <- purrr::map(unique_folders, \(folder) files %>% .[names(.) == folder] %>%
