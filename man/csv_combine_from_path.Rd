@@ -2,7 +2,7 @@
 % Please edit documentation in R/io.R
 \name{csv_combine_from_path}
 \alias{csv_combine_from_path}
-\title{Find and combine multiple csv files into 1 xlsx file}
+\title{Combine multiple csv files into 1 xlsx file}
 \usage{
 csv_combine_from_path(path, recurse = TRUE)
 }

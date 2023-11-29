@@ -108,8 +108,8 @@ write_nested_output <- function(output_list, dir_out, mindepth = 5) {
 #' # write output by running the example from write_any_output(), then run ...
 #' \dontrun{nested_input <- read_nested_input(dir_out)}
 #' @importFrom fs path_expand dir_ls
-#' @importFrom purrr map map_int walk2 pluck
-#' @importFrom readr write_csv write_rds
+#' @importFrom purrr map walk2 pluck
+#' @importFrom readr read_rds
 #' @importFrom stringr str_remove str_split_1
 #' @export
 read_nested_input <- function(dir_in) {
@@ -119,7 +119,7 @@ read_nested_input <- function(dir_in) {
   filenames <- fs::dir_ls(dir_in, recurse=TRUE, glob = "*.RDS")
 
   values_flat <- filenames %>%
-    purrr::map(~read_rds(.))
+    purrr::map(~readr::read_rds(.))
 
   list_levels <- filenames %>%
     stringr::str_remove(paste0(dir_in, "/")) %>%

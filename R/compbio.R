@@ -149,6 +149,24 @@ calculate_contrasts_table <- function(se, contrast, design_char) {
 
 }
 
+#' Filters genes with padj <= max_padj and fc >= min_fc from a DESeq results table
+#'
+#' @param contrasts_tb A contrast table from DESeq2
+#' @param max_padj Rows with padj under this value are filtered
+#' @param min_abs_log2fc Rows with absolute log2FoldChanage over this value are filtered
+#' @return A tibble after filtering
+#'
+#' @importFrom dplyr filter
+#' @export
+filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc) {
+
+  contrasts_tb %>%
+    dplyr::filter(padj <= max_padj,
+                  abs(log2FoldChange) >= min_abs_log2fc)
+
+}
+
+
 #' Creates a volcano plot from a contrasts table
 #'
 #' Genes for which the absolute fold change is larger than indidated and have

@@ -2,7 +2,7 @@
 % Please edit documentation in R/io.R
 \name{pdf_combine_from_path}
 \alias{pdf_combine_from_path}
-\title{Combine multiple pdfs into 1 file}
+\title{Combine multiple pdf files into 1 pdf file}
 \usage{
 pdf_combine_from_path(path)
 }
