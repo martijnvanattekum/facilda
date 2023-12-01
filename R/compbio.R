@@ -104,7 +104,8 @@ calculate_contrasts_table <- function(se, contrast, design_char, ...) {
   # Check design_char argument
   design_parameters <- stringr::str_split(design_char, "\\+")[[1]] %>%
     stringr::str_remove_all("[ ~]") %>%
-    stringr::str_subset(":", negate = TRUE)  # removes interaction terms
+    stringr::str_subset(":", negate = TRUE) %>%  # removes interaction terms
+    stringr::str_subset("^\\d$", negate = TRUE)  # removes intercept term
 
   stopifnot(all(design_parameters %in% colnames(cleanse::get_col_data(se))))
 
@@ -124,7 +125,7 @@ calculate_contrasts_table <- function(se, contrast, design_char, ...) {
     stopifnot(stringr::str_detect(design_char, contrast_var))
   }
 
-  # filters only the columns of se that are not NA and finite
+  # filters only the columns of se that do not contain NA and finite
   filter_valid_values <- function(se, colname) {
 
     se_filtered <- cleanse::filter(se, col, !is.na(!!rlang::sym(colname)))
