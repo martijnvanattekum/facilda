@@ -4,7 +4,7 @@
 \alias{calculate_contrasts_table}
 \title{Creates a contrasts table}
 \usage{
-calculate_contrasts_table(se, contrast, design_char)
+calculate_contrasts_table(se, contrast, design_char, ...)
 }
 \arguments{
 \item{se}{A SummarizedExperiment containing the expression data and the
@@ -14,6 +14,8 @@ metadata required in the defined contrast}
 
 \item{design_char}{a character that will be converted to the design formula.
 See ?DESeq2::DESeqDataSet}
+
+\item{...}{additional arguments passed to DESeq2::results}
 }
 \value{
 A tibble with the requested contrast table

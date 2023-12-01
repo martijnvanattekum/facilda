@@ -90,6 +90,7 @@ annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
 #' @param contrast The variables to contrast. See ?DESeq2::results
 #' @param design_char a character that will be converted to the design formula.
 #' See ?DESeq2::DESeqDataSet
+#' @param ... additional arguments passed to DESeq2::results
 #' @return A tibble with the requested contrast table
 #'
 #' @importFrom cleanse get_row_data options_from_coldata filter
@@ -98,7 +99,7 @@ annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
 #' @importFrom purrr reduce
 #' @importFrom stats as.formula
 #' @export
-calculate_contrasts_table <- function(se, contrast, design_char) {
+calculate_contrasts_table <- function(se, contrast, design_char, ...) {
 
   # Check design_char argument
   design_parameters <- stringr::str_split(design_char, "\\+")[[1]] %>%
@@ -144,7 +145,7 @@ calculate_contrasts_table <- function(se, contrast, design_char) {
     {purrr::reduce(design_parameters, \(this_se, param) filter_valid_values(this_se, param), .init = .)} %>%
     DESeq2::DESeqDataSet(design = stats::as.formula(design_char)) %>%
     DESeq2::DESeq() %>%
-    DESeq2::results(contrast=contrast) %>%
+    DESeq2::results(contrast=contrast, ...) %>%
     annotate_results_table(se, row_data_cols_to_add = c("symbol", "biotype"))
 
 }
