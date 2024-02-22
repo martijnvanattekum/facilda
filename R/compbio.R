@@ -156,11 +156,20 @@ calculate_contrasts_table <- function(se, contrast, design_char, ...) {
 #' @param contrasts_tb A contrast table from DESeq2
 #' @param max_padj Rows with padj under this value are filtered
 #' @param min_abs_log2fc Rows with absolute log2FoldChanage over this value are filtered
+#' @param direction One of "up", "down", or "both" indicating whether to filter upregulated/downregulated genes, or both
 #' @return A tibble after filtering
 #'
 #' @importFrom dplyr filter
 #' @export
-filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc) {
+filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
+                                  direction = "both") {
+
+  stopifnot(direction %in% c("up", "down", "both"))
+  if (direction != "both") {
+    direction_sign <- ifelse(direction == "up", 1, -1)
+    contrasts_tb <- contrasts_tb %>%
+      dplyr::filter(sign(log2FoldChange) == direction_sign)
+    }
 
   contrasts_tb %>%
     dplyr::filter(padj <= max_padj,

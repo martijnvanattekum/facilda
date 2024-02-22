@@ -4,7 +4,12 @@
 \alias{filter_relevant_genes}
 \title{Filters genes with padj <= max_padj and fc >= min_fc from a DESeq results table}
 \usage{
-filter_relevant_genes(contrasts_tb, max_padj, min_abs_log2fc)
+filter_relevant_genes(
+  contrasts_tb,
+  max_padj,
+  min_abs_log2fc,
+  direction = "both"
+)
 }
 \arguments{
 \item{contrasts_tb}{A contrast table from DESeq2}
@@ -12,6 +17,8 @@ filter_relevant_genes(contrasts_tb, max_padj, min_abs_log2fc)
 \item{max_padj}{Rows with padj under this value are filtered}
 
 \item{min_abs_log2fc}{Rows with absolute log2FoldChanage over this value are filtered}
+
+\item{direction}{One of "up", "down", or "both" indicating whether to filter upregulated/downregulated genes, or both}
 }
 \value{
 A tibble after filtering
