@@ -79,6 +79,11 @@ write_nested_output <- function(output_list, dir_out, mindepth = 5) {
       readr::write_rds(x = object,
                        file = fs::path(dir_out, paste0(name, ".RDS")))
 
+    } else if (methods::is(object, "SummarizedExperiment")) {
+
+      readr::write_rds(x = object,
+                       file = fs::path(dir_out, paste0(name, "_se", ".RDS")))
+
       # recursion case
     } else if (methods::is(object, "list")) {
 
