@@ -1,5 +1,6 @@
 utils::globalVariables(c(".", "dot_color", "dot_label", "has_changed", "is_deg",
-                         "is_relevant", "log2FoldChange", "padj", "symbol"))
+                         "is_relevant", "log2FoldChange", "padj", "symbol",
+                         "color", "label"))
 #' Detects annotation identifiers and converts them to the requested format
 #'
 #' Uses the org.Hs.eg.db database to detect the keytype of the input vector
@@ -180,9 +181,12 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 
 #' Creates a volcano plot from a contrasts table
 #'
-#' Genes for which the absolute fold change is larger than indidated and have
+#' Genes for which the absolute fold change is larger than indicated and have
 #' have an adjusted p value below the significance_cutoff will be highlighted
 #' and labeled (when requested).
+#' If contrast_tb contain a column named 'color', the dot colors for each dot
+#' will be taken from this column, otherwise dots will be colored based on their
+#' relevance.
 #'
 #' @param contrast_tb A tibble produced by facilda::calculate_contrasts_table
 #' @param ttl The title of the plot
@@ -197,6 +201,9 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 #' @importFrom ggplot2 ggplot aes geom_point scale_x_continuous scale_color_identity
 #' @importFrom ggplot2 theme_bw ggtitle geom_hline geom_vline theme element_text
 #' @importFrom ggrepel geom_text_repel
+#' @examples
+#' # Create a volcano plot from the example data
+#' volcano_plot(contrasts_table)
 #' @export
 volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE) {
 
@@ -205,13 +212,15 @@ volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cuto
     dplyr::mutate(is_deg = padj < significance_cutoff,
                   has_changed = abs(log2FoldChange) > log2(relevant_fc),
                   is_relevant = is_deg & has_changed) %>%
-    mutate(dot_color = ifelse(is_relevant, "orange", "grey")) %>%
-    mutate(dot_label = ifelse(is_relevant, symbol, ""))
+    mutate(label = ifelse(is_relevant, symbol, ""))
+
+  if (!"color" %in% colnames(plot_data)) {
+    plot_data <- plot_data %>% mutate(color = ifelse(.$is_relevant, "orange", "grey"))}
 
   x_span <- max(abs(dplyr::pull(plot_data, log2FoldChange)), na.rm=TRUE) * 1.05
 
   ggplot2::ggplot(plot_data,
-                  ggplot2::aes(x=log2FoldChange, y=-log10(padj), color=dot_color, label=dot_label)) +
+                  ggplot2::aes(x=log2FoldChange, y=-log10(padj), color=color, label=label)) +
     ggplot2::geom_point(size=1) +
     ggplot2::scale_x_continuous(limits = c(-x_span, x_span)) +
     ggplot2::scale_color_identity() +
@@ -223,3 +232,5 @@ volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cuto
     ggplot2::theme(strip.text = ggplot2::element_text(size = 20))
 
 }
+
+

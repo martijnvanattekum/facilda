@@ -29,7 +29,14 @@ considered significant}
 A ggplot2 object of the volcano plot
 }
 \description{
-Genes for which the absolute fold change is larger than indidated and have
+Genes for which the absolute fold change is larger than indicated and have
 have an adjusted p value below the significance_cutoff will be highlighted
 and labeled (when requested).
+If contrast_tb contain a column named 'color', the dot colors for each dot
+will be taken from this column, otherwise dots will be colored based on their
+relevance.
+}
+\examples{
+# Create a volcano plot from the example data
+volcano_plot(contrasts_table)
 }
