@@ -16,6 +16,7 @@ Imports:
     methods,
     fs,
     ggplot2,
+    scales,
     ggrepel,
     cowplot,
     dplyr,

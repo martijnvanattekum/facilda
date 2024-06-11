@@ -1,6 +1,6 @@
 utils::globalVariables(c(".", "dot_color", "dot_label", "has_changed", "is_deg",
                          "is_relevant", "log2FoldChange", "padj", "symbol",
-                         "color", "label"))
+                         "color_col", "label", "..."))
 #' Detects annotation identifiers and converts them to the requested format
 #'
 #' Uses the org.Hs.eg.db database to detect the keytype of the input vector
@@ -184,9 +184,6 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 #' Genes for which the absolute fold change is larger than indicated and have
 #' have an adjusted p value below the significance_cutoff will be highlighted
 #' and labeled (when requested).
-#' If contrast_tb contain a column named 'color', the dot colors for each dot
-#' will be taken from this column, otherwise dots will be colored based on their
-#' relevance.
 #'
 #' @param contrast_tb A tibble produced by facilda::calculate_contrasts_table
 #' @param ttl The title of the plot
@@ -195,17 +192,22 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 #' @param significance_cutoff the adjusted p-value below which genes are
 #' considered significant
 #' @param add_labels whether to label the relevant points
+#' @param color_col character which column will be taken to color the dots.
+#' If NULL, the default coloring by relevance will be used.
+#' @param ... unused
 #' @return A ggplot2 object of the volcano plot
 #'
 #' @importFrom dplyr filter mutate pull
 #' @importFrom ggplot2 ggplot aes geom_point scale_x_continuous scale_color_identity
 #' @importFrom ggplot2 theme_bw ggtitle geom_hline geom_vline theme element_text
 #' @importFrom ggrepel geom_text_repel
+#' @importFrom stats sd
+#' @importFrom scales squish
 #' @examples
 #' # Create a volcano plot from the example data
 #' volcano_plot(contrasts_table)
 #' @export
-volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE) {
+volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE, color_col = NULL, ...) {
 
   plot_data <- contrast_tb %>%
     dplyr::filter(!is.na(padj) & !is.na(log2FoldChange)) %>%
@@ -214,17 +216,27 @@ volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cuto
                   is_relevant = is_deg & has_changed) %>%
     mutate(label = ifelse(is_relevant, symbol, ""))
 
-  if (!"color" %in% colnames(plot_data)) {
-    plot_data <- plot_data %>% mutate(color = ifelse(.$is_relevant, "orange", "grey"))}
+  if (!is.null(color_col)) {
+    color_values <- purrr::chuck(plot_data, color_col)
+    color_min_squish <- base::mean(color_values) - 2 * stats::sd(color_values)
+    color_max_squish <- base::mean(color_values) + 2 * stats::sd(color_values)
+    custom_scale <- ggplot2::scale_color_gradient2(low="blue", mid="yellow", high="red",
+                                                   limits = c(color_min_squish, color_max_squish), oob = scales::squish)
+  } else {
+    color_col <- "color"
+    plot_data <- plot_data %>%
+      mutate(color = ifelse(.$is_relevant, "orange", "grey"))
+    custom_scale <- ggplot2::scale_color_identity()
+  }
 
   x_span <- max(abs(dplyr::pull(plot_data, log2FoldChange)), na.rm=TRUE) * 1.05
 
   ggplot2::ggplot(plot_data,
-                  ggplot2::aes(x=log2FoldChange, y=-log10(padj), color=color, label=label)) +
+                  ggplot2::aes(x=log2FoldChange, y=-log10(padj), color=!!sym(color_col), label=label)) +
     ggplot2::geom_point(size=1) +
     ggplot2::scale_x_continuous(limits = c(-x_span, x_span)) +
-    ggplot2::scale_color_identity() +
     ggplot2::theme_bw() +
+    custom_scale +
     {if (!is.null(ttl)) ggplot2::ggtitle(ttl)} +
     {if (add_labels) ggrepel::geom_text_repel(seed = 42, color="grey30", max.overlaps=100, segment.ncp = 3, force = 20)} +
     ggplot2::geom_hline(yintercept=-log10(significance_cutoff), linetype="dotted", color = "grey30") +
@@ -232,5 +244,3 @@ volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cuto
     ggplot2::theme(strip.text = ggplot2::element_text(size = 20))
 
 }
-
-

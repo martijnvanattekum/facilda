@@ -9,7 +9,9 @@ volcano_plot(
   ttl = NULL,
   relevant_fc = 8,
   significance_cutoff = 0.01,
-  add_labels = TRUE
+  add_labels = TRUE,
+  color_col = NULL,
+  ...
 )
 }
 \arguments{
@@ -24,6 +26,11 @@ relevant}
 considered significant}
 
 \item{add_labels}{whether to label the relevant points}
+
+\item{color_col}{character which column will be taken to color the dots.
+If NULL, the default coloring by relevance will be used.}
+
+\item{...}{unused}
 }
 \value{
 A ggplot2 object of the volcano plot
@@ -32,9 +39,6 @@ A ggplot2 object of the volcano plot
 Genes for which the absolute fold change is larger than indicated and have
 have an adjusted p value below the significance_cutoff will be highlighted
 and labeled (when requested).
-If contrast_tb contain a column named 'color', the dot colors for each dot
-will be taken from this column, otherwise dots will be colored based on their
-relevance.
 }
 \examples{
 # Create a volcano plot from the example data
