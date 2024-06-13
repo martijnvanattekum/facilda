@@ -218,9 +218,9 @@ volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cuto
 
   if (!is.null(color_col)) {
     color_values <- purrr::chuck(plot_data, color_col)
-    color_min_squish <- base::mean(color_values) - 2 * stats::sd(color_values)
-    color_max_squish <- base::mean(color_values) + 2 * stats::sd(color_values)
-    custom_scale <- ggplot2::scale_color_gradient2(low="blue", mid="yellow", high="red",
+    color_min_squish <- max(base::mean(color_values) - 2 * stats::sd(color_values), min(color_values))
+    color_max_squish <- min(base::mean(color_values) + 2 * stats::sd(color_values), max(color_values))
+    custom_scale <- ggplot2::scale_color_gradient2(low="blue", mid="grey", high="red",
                                                    limits = c(color_min_squish, color_max_squish), oob = scales::squish)
   } else {
     color_col <- "color"
