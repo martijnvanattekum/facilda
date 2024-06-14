@@ -185,7 +185,7 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 #' have an adjusted p value below the significance_cutoff will be highlighted
 #' and labeled (when requested).
 #'
-#' @param contrast_tb A tibble produced by facilda::calculate_contrasts_table
+#' @param contrasts_tb A tibble produced by facilda::calculate_contrasts_table
 #' @param ttl The title of the plot
 #' @param relevant_fc the absolute fold change above which genes are considered
 #' relevant
@@ -207,9 +207,9 @@ filter_relevant_genes <- function(contrasts_tb, max_padj, min_abs_log2fc,
 #' # Create a volcano plot from the example data
 #' volcano_plot(contrasts_table)
 #' @export
-volcano_plot <- function(contrast_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE, color_col = NULL, ...) {
+volcano_plot <- function(contrasts_tb, ttl=NULL, relevant_fc=8, significance_cutoff=.01, add_labels = TRUE, color_col = NULL, ...) {
 
-  plot_data <- contrast_tb %>%
+  plot_data <- contrasts_tb %>%
     dplyr::filter(!is.na(padj) & !is.na(log2FoldChange)) %>%
     dplyr::mutate(is_deg = padj < significance_cutoff,
                   has_changed = abs(log2FoldChange) > log2(relevant_fc),
