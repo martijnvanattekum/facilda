@@ -130,7 +130,7 @@ calculate_contrasts_table <- function(se, contrast, design_char, ...) {
   filter_valid_values <- function(se, colname) {
 
     se_filtered <- cleanse::filter(se, col, !is.na(!!rlang::sym(colname)))
-    if (is.numeric(se$colname)){
+    if (is.numeric(purrr::chuck(cleanse::get_col_data(se_filtered), colname))){
       se_filtered <- cleanse::filter(se_filtered, col, is.finite(!!rlang::sym(colname)))
     }
     if (ncol(se) != ncol(se_filtered)) {
