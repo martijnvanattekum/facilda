@@ -5,7 +5,7 @@
 \title{Creates a volcano plot from a contrasts table}
 \usage{
 volcano_plot(
-  contrast_tb,
+  contrasts_tb,
   ttl = NULL,
   relevant_fc = 8,
   significance_cutoff = 0.01,
@@ -15,7 +15,7 @@ volcano_plot(
 )
 }
 \arguments{
-\item{contrast_tb}{A tibble produced by facilda::calculate_contrasts_table}
+\item{contrasts_tb}{A tibble produced by facilda::calculate_contrasts_table}
 
 \item{ttl}{The title of the plot}
 

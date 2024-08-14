@@ -148,7 +148,7 @@ read_nested_input <- function(dir_in) {
 pdf_combine_from_path <- function(path) {
 
   filename <- paste0(basename(path), ".pdf")
-  pdf_filenames <- fs::dir_ls(path, glob="*.pdf")
+  pdf_filenames <- fs::dir_ls(path, glob="*.pdf") %>% sort()
   if (length(pdf_filenames) > 1){qpdf::pdf_combine(pdf_filenames, fs::path(path, filename))}
 
 }
