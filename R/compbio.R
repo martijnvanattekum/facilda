@@ -1,6 +1,6 @@
 utils::globalVariables(c(".", "dot_color", "dot_label", "has_changed", "is_deg",
                          "is_relevant", "log2FoldChange", "padj", "symbol",
-                         "color_col", "label", "..."))
+                         "color_col", "label", "...", ":="))
 #' Detects annotation identifiers and converts them to the requested format
 #'
 #' Uses the org.Hs.eg.db database to detect the keytype of the input vector
@@ -62,13 +62,17 @@ automap_ids <- function (ids, return_keytype = "SYMBOL", species = "human") {
 #'
 #' @importFrom cleanse get_row_data
 #' @importFrom tibble rownames_to_column tibble
-#' @importFrom dplyr filter arrange left_join
+#' @importFrom dplyr filter arrange left_join select
+#' @importFrom purrr reduce
 annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
 
-  stopifnot(all(row_data_cols_to_add %in% colnames(cleanse::get_row_data(se))))
+  rowdata <- cleanse::get_row_data(se)
+  stopifnot("ensg" %in% colnames(rowdata))
 
-  # Extract this info to add it back after the contrasts are calculated
-  additional_rowdata <- cleanse::get_row_data(se) %>%
+  unavailable_cols <- base::setdiff(row_data_cols_to_add, colnames(rowdata))
+  rowdata <- purrr::reduce(unavailable_cols,
+                           function(tb, colname) dplyr::mutate(tb, {{colname}} := NA),
+                           .init=rowdata) %>%
     dplyr::select(!!c("ensg", row_data_cols_to_add))
 
   deseq_results %>%
@@ -77,7 +81,7 @@ annotate_results_table <- function(deseq_results, se, row_data_cols_to_add) {
     tibble::as_tibble() %>%
     dplyr::filter(!is.na(padj)) %>%
     dplyr::arrange(padj) %>%
-    dplyr::left_join(additional_rowdata, by = "ensg") %>%
+    dplyr::left_join(rowdata, by = "ensg") %>%
     dplyr::filter(!is.na(symbol))
 
 }
